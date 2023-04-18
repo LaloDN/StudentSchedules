@@ -35,7 +35,7 @@ class Teacher(Base):
 class Carrer(Base):
     __tablename__ = 'Carrers'
     id = Column(Integer, primary_key=True)
-    name = Column(String, nullable = False)
+    name = Column(String(40), nullable = False)
     students = relationship('Student', backref='carrer')
     asignatures = relationship('Asignature', backref='carrer')
 
@@ -48,7 +48,7 @@ class StudentAsignature(Base):
 class TeacherAsignature(Base):
     __tablename__ = 'TeacherAsignatures'
     id = Column(Integer, primary_key=True)
-    hour = Column(String,nullable = False)
+    hour = Column(String(30),nullable = False)
     groupNo = Column(Integer, nullable = False, unique = True)
     idTeacher = Column(Integer,ForeignKey('Teachers.id'),nullable = False)
     idAsignature = Column(Integer,ForeignKey('Asignatures.id'),nullable = False)
