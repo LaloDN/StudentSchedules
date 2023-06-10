@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from datetime import date
+from typing import Union
 
 
 class Student(BaseModel):
@@ -53,6 +54,7 @@ class Teacher(BaseModel):
         }
 
 class Carrer_Scheme(BaseModel):
+    id : int | None = Field(default=None,title='Id of the carrer in the database')
     name: str = Field(default=...,title='Name of the carrer',max_length=40)
 
     class Config:
