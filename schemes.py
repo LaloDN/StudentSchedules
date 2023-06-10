@@ -54,14 +54,18 @@ class Teacher(BaseModel):
         }
 
 class Carrer_Scheme(BaseModel):
-    id : int | None = Field(default=None,title='Id of the carrer in the database')
-    name: str = Field(default=...,title='Name of the carrer',max_length=40)
+    """Carrer input model"""
+    name: str = Field(default=...,title='Carrer name',description='Name of the carrer',max_length=40)
 
+class Carrer_DB(Carrer_Scheme):
+    """Carrer database model with id field"""
+    id : int = Field(title="Carrer ID",description='Id of the carrer in the database')
+    
     class Config:
         schema_extra ={
             "single_example": {
                 "id": 20,
-                "name": "Bachelor of arts"
+                "name": "Elementary education"
             },
             "list_example":[
                 {
@@ -78,7 +82,7 @@ class Carrer_Scheme(BaseModel):
                 }
             ]
         }
-    
+
 class StudentAsignature(BaseModel):
     idStudent: int = Field(default=...,title='Database ID of the student')
     idAsignature: int = Field(default=...,title='Database ID of the asignature')
