@@ -37,7 +37,7 @@ class Teacher(Base):
 class Carrer(Base):
     __tablename__ = 'Carrers'
     id = Column(Integer, primary_key=True,autoincrement=True)
-    name = Column(String(40), nullable = False)
+    name = Column(String(40), nullable = False, unique=True)
     students = relationship('Student', backref='carrer')
     asignatures = relationship('Asignature', backref='carrer')
 
@@ -56,6 +56,6 @@ class TeacherAsignature(Base):
     idAsignature = Column(Integer,ForeignKey('Asignatures.id', ondelete='CASCADE', onupdate='CASCADE'),nullable = False)
 
 
-Base.metadata.drop_all(engine)
-Base.metadata.create_all(engine)
+#Base.metadata.drop_all(engine)
+#Base.metadata.create_all(engine)
 #event.listen(engine, 'connect', lambda c, _: c.execute('pragma foreign_keys=on'))
