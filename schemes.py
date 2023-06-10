@@ -59,9 +59,24 @@ class Carrer_Scheme(BaseModel):
 
     class Config:
         schema_extra ={
-            "example": {
+            "single_example": {
+                "id": 20,
                 "name": "Bachelor of arts"
-            }
+            },
+            "list_example":[
+                {
+                    "id": 4,
+                    "name": "Robotics"
+                },
+                {
+                    "id": 37,
+                    "name": "Electronic engineering"
+                },
+                {
+                    "id": 122,
+                    "name": "Aviation"
+                }
+            ]
         }
     
 class StudentAsignature(BaseModel):

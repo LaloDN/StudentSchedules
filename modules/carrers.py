@@ -8,7 +8,8 @@ from utils import model_to_dict
 
 router = APIRouter(prefix='/carrers',tags=['Carrer'])
 
-@router.post('/create/',status_code=201)
+@router.post('/create/',status_code=201, responses = {
+    201 :{'status_code':201,'message':'Carrer created successfully!', 'id':435}})
 async def new_carrer(carrer: Annotated[Carrer_Scheme,Body], session = Depends(db_connection)):
     try:
         carrer_dict = carrer.dict()
