@@ -20,14 +20,14 @@ router = APIRouter(prefix='/carrers',tags=['Carrer'])
             "description": "Function internal error",
             "content": {
                 "application/json": {
-                    "example": {'message':'Function error','error':'Some Python error message...'}
+                    "example": {'detail':{'message':'Function error','error':'Some Python error message...'}}
                 }
             }},
     560:{
             "description": "SQLAlchemy error",
             "content": {
                 "application/json": {
-                    "example": {'message':'SQLAlchemy error','error':'Some SQLALchemy error message...'}
+                    "example": {'detail':{'message':'SQLAlchemy error','error':'Some SQLALchemy error message...'}}
                 }
             }}
 })
@@ -90,9 +90,10 @@ async def new_carrer(carrer: Annotated[Carrer_Scheme,Body], session = Depends(db
             }
         }}
 })
-async def get_carrers(name : Annotated[str | None,Query(max_length=40)] = None,
-                    id : Annotated[int | None,Query(ge=1)] = None,
+async def get_carrers(name : Annotated[str | None,Query(max_length=40,example="Aviation")] = None,
+                    id : Annotated[int | None,Query(ge=1,example=6)] = None,
                     session = Depends(db_connection)) :
+    """Search a signle carrer by name or id"""
     try:
         if name:
             result = session.query(Carrer).filter(Carrer.name.ilike(f'%{name}%')).first()
@@ -115,8 +116,44 @@ async def get_carrers(name : Annotated[str | None,Query(max_length=40)] = None,
     except Exception as e:
         raise HTTPException(status_code=500,detail={'message': 'Function error', 'error':str(e)})
 
-@router.get('/obtain/',status_code=200, response_model = List[Carrer_DB])
+@router.get('/obtain/',status_code=200, response_model = List[Carrer_DB], responses={
+     200:{
+        "description": "Carrer items retrieved successfully",
+        "content": {
+            "application/json": {
+                "example": [
+                    {
+                        "id": 4,
+                        "name": "Robotics"
+                    },
+                    {
+                        "id": 37,
+                        "name": "Electronic engineering"
+                    },
+                    {
+                        "id": 122,
+                        "name": "Aviation"
+                    }
+                ]
+            }
+        }},
+    500:{
+        "description": "Function internal error",
+        "content": {
+            "application/json": {
+                "example": {'detail':{'message':'Function error','error':'Some Python error message...'}}
+            }
+        }},
+    560:{
+        "description": "SQLAlchemy error",
+        "content": {
+            "application/json": {
+                "example": {'detail':{'message':'SQLAlchemy error','error':'Some SQLALchemy error message...'}}
+            }
+        }}
+})
 async def get_carrers(session = Depends(db_connection)) :
+    """Get list of all carrers in existence"""
     try:
         result = session.query(Carrer).all()
         carrer_dicts = [model_to_dict(row) for row in result]

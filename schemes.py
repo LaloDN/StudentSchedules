@@ -55,7 +55,7 @@ class Teacher(BaseModel):
 
 class Carrer_Scheme(BaseModel):
     """Carrer input model"""
-    name: str = Field(default=...,title='Carrer name',description='Name of the carrer',max_length=40)
+    name: str = Field(default=...,title='Carrer name',description='Name of the carrer',max_length=40,example="Aviation")
 
 class Carrer_DB(Carrer_Scheme):
     """Carrer database model with id field"""
