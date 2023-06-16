@@ -16,7 +16,7 @@ class Student(Base):
     birthday = Column(Date,nullable=False)
     semester = Column(Integer,nullable=False)
     gpa = Column(Float,nullable=False)
-    carrerId = Column(Integer,ForeignKey('Carrers.id', ondelete='CASCADE', onupdate='CASCADE'),nullable=False)
+    careerId = Column(Integer,ForeignKey('Careers.id', ondelete='CASCADE', onupdate='CASCADE'),nullable=False)
     
 
 class Asignature(Base):
@@ -24,7 +24,7 @@ class Asignature(Base):
     id = Column(Integer, primary_key=True,autoincrement=True)
     name = Column(String(80),nullable=False,unique=True)
     semester = Column(Integer,nullable=False)
-    carrerId = Column(Integer,ForeignKey('Carrers.id', ondelete='CASCADE', onupdate='CASCADE'), nullable = False)
+    careerId = Column(Integer,ForeignKey('Careers.id', ondelete='CASCADE', onupdate='CASCADE'), nullable = False)
 
 
 class Teacher(Base):
@@ -34,12 +34,12 @@ class Teacher(Base):
     firstName = Column(String(50), nullable = False)
     secondName = Column(String(50), nullable = False)
 
-class Carrer(Base):
-    __tablename__ = 'Carrers'
+class Career(Base):
+    __tablename__ = 'Careers'
     id = Column(Integer, primary_key=True,autoincrement=True)
     name = Column(String(40), nullable = False, unique=True)
-    students = relationship('Student', backref='carrer')
-    asignatures = relationship('Asignature', backref='carrer')
+    students = relationship('Student', backref='career')
+    asignatures = relationship('Asignature', backref='career')
 
 class StudentAsignature(Base):
     __tablename__ = 'StudentAsignatures'

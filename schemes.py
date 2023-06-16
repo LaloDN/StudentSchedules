@@ -10,7 +10,7 @@ class Student(BaseModel):
     birthday: date = Field(default=...,title='Birthday of the student in DD-MM-YYYY format')
     semester: int = Field(default=...,title='Current grade of the student',ge=1,le=10)
     gpa: float = Field(default=...,title='Grade point average of the student',ge=0,le=100)
-    carrerId: int = Field(default=...,title='Database ID of the student carrer')
+    careerId: int = Field(default=...,title='Database ID of the student career')
 
     class Config:
         schema_extra ={
@@ -21,21 +21,21 @@ class Student(BaseModel):
                 "birthday": "22-04-2011",
                 "semester": 2,
                 "gpa": 77.8,
-                "carrerId": 2
+                "careerId": 2
             }
         }
 
 class Asignature(BaseModel):
     name: str = Field(default=...,title='Name of the asignature',max_length=80)
     semester: int = Field(default=...,title='Grade to which it belongs the asignature',ge=1,le=10)
-    carrerId: int = Field(default=...,title='Database ID of the asignature carrer to which it belongs')
+    careerId: int = Field(default=...,title='Database ID of the asignature career to which it belongs')
 
     class Config:
         schema_extra ={
             "example": {
                 "name": "Phisical Education IV",
                 "semster": 5,
-                "carrerId": 3
+                "careerId": 3
             }
         }
 
@@ -53,13 +53,13 @@ class Teacher(BaseModel):
             }
         }
 
-class Carrer_Scheme(BaseModel):
-    """Carrer input model"""
-    name: str = Field(default=...,title='Carrer name',description='Name of the carrer',max_length=40,example="Aviation")
+class Career_Scheme(BaseModel):
+    """Career input model"""
+    name: str = Field(default=...,title='Career name',description='Name of the career',max_length=40,example="Aviation")
 
-class Carrer_DB(Carrer_Scheme):
-    """Carrer database model with id field"""
-    id : int = Field(title="Carrer ID",description='Id of the carrer in the database')
+class Career_DB(Career_Scheme):
+    """Career database model with id field"""
+    id : int = Field(title="Career ID",description='Id of the career in the database')
     
     class Config:
         schema_extra ={
