@@ -3,7 +3,7 @@ from typing import Annotated, List, Union
 from sqlalchemy.exc import SQLAlchemyError
 from sql.connection import db_connection
 from schemes import Career_Scheme, Career_DB
-from sql.definition import Career
+from sql.definition import Career, Teacher
 from utils import model_to_dict, Error400, Error404
 
 router = APIRouter(prefix='/careers',tags=['Career'])
@@ -165,5 +165,25 @@ async def get_careers(session = Depends(db_connection)) :
         raise HTTPException(status_code=500,detail={'message': 'SQLAlchemy error','error':str(e)})
 
 @router.put('/modify/',status_code = 201)
-async def modify_career(id : Annotated[int,Query(ge=0,example=14,description="Id of the career to be modified")],session = Depends(db_connection)):
-    return {'hi':'hi'}
+async def modify_career(career_id : Annotated[int,Query(ge=0,example=14,description="Id of the career to be modified")],
+                        new_name: Annotated[str,Query(max_length=40, description="New name of the career")],
+                        session = Depends(db_connection)):
+    """Modify a career by the given id"""
+    try:
+        old_name = session.query(Career.name).filter_by(id=career_id).first()
+        if old_name is None:
+            raise Error404
+        result = session.query(Career).filter_by(id=career_id).update({Career.name: new_name})
+        if result != 1:
+            session.rollback()
+            raise Error400
+        session.commit()
+        return {'status_code': 201,'message': f'Success! Career {old_name[0]} renamed to {new_name}'}
+    except Error400:
+        raise HTTPException(status_code=400,detail={'message': 'There was an error updating the career'})
+    except Error404:
+        raise HTTPException(status_code=404,detail={'message': f'The career with id {career_id} does not exist'})
+    except Exception as e:
+        raise HTTPException(status_code=500,detail={'message': 'Function error', 'error':str(e)})
+    except SQLAlchemyError() as e:
+        raise HTTPException(status_code=500,detail={'message': 'SQLAlchemy error','error':str(e)})
