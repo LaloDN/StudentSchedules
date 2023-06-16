@@ -69,6 +69,6 @@ class Class(Base):
     idAsignature = Column(Integer,ForeignKey('Asignatures.id', ondelete='CASCADE', onupdate='CASCADE'),nullable = False)
     
 
-Base.metadata.drop_all(engine)
-Base.metadata.create_all(engine)
+#Base.metadata.drop_all(engine)
+#Base.metadata.create_all(engine)
 #event.listen(engine, 'connect', lambda c, _: c.execute('pragma foreign_keys=on'))

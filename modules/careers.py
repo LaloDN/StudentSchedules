@@ -164,12 +164,49 @@ async def get_careers(session = Depends(db_connection)) :
     except SQLAlchemyError as e:
         raise HTTPException(status_code=500,detail={'message': 'SQLAlchemy error','error':str(e)})
 
-@router.put('/modify/',status_code = 201)
+@router.put('/modify/',status_code = 201, responses={
+    201:{
+            "description": "Career item modified",
+            "content": {
+                "application/json": {
+                    "example": {'status_code': 201, 'message': 'Success! Carrer Robitics renamed to Robotics'}
+                }
+            }},
+    400:{
+            "description": "Update error",
+            "content": {
+                "application/json": {
+                    "example": {'detail':{'message': 'There was an error updating the career'}}
+                }
+            }},
+    404:{
+        "description": "Career item not found",
+        "content": {
+            "application/json": {
+                "example": {'detail':{'message':'The career with id 204 does not exist'}}
+            }
+        }},
+    500:{
+        "description": "Function internal error",
+        "content": {
+            "application/json": {
+                "example": {'detail':{'message':'Function error','error':'Some Python error message...'}}
+            }
+        }},
+    560:{
+        "description": "SQLAlchemy error",
+        "content": {
+            "application/json": {
+                "example": {'detail':{'message':'SQLAlchemy error','error':'Some SQLALchemy error message...'}}
+            }
+        }}
+})
 async def modify_career(career_id : Annotated[int,Query(ge=0,example=14,description="Id of the career to be modified")],
                         new_name: Annotated[str,Query(max_length=40, description="New name of the career")],
                         session = Depends(db_connection)):
     """Modify a career by the given id"""
     try:
+        #Get the name before replacing it
         old_name = session.query(Career.name).filter_by(id=career_id).first()
         if old_name is None:
             raise Error404
@@ -186,4 +223,63 @@ async def modify_career(career_id : Annotated[int,Query(ge=0,example=14,descript
     except Exception as e:
         raise HTTPException(status_code=500,detail={'message': 'Function error', 'error':str(e)})
     except SQLAlchemyError() as e:
-        raise HTTPException(status_code=500,detail={'message': 'SQLAlchemy error','error':str(e)})
+        raise HTTPException(status_code=560,detail={'message': 'SQLAlchemy error','error':str(e)})
+
+@router.delete('/erase/',status_code = 201, responses={
+        201:{
+            "description": "Career item deleted",
+            "content": {
+                "application/json": {
+                    "example": {'status_code': 201, 'message': 'Success! Carrer Aviation was deleted successfully'}
+                }
+            }},
+        400:{
+                "description": "Delete error",
+                "content": {
+                    "application/json": {
+                        "example": {'detail':{'message': 'There was an error deleting the career'}}
+                    }
+                }},
+        404:{
+            "description": "Career item not found",
+            "content": {
+                "application/json": {
+                    "example": {'detail':{'message':'The career with id 644 does not exist'}}
+                }
+            }},
+        500:{
+                "description": "Function internal error",
+                "content": {
+                    "application/json": {
+                        "example": {'detail':{'message':'Function error','error':'Some Python error message...'}}
+                    }
+                }},
+        560:{
+                "description": "SQLAlchemy error",
+                "content": {
+                    "application/json": {
+                        "example": {'detail':{'message':'SQLAlchemy error','error':'Some SQLALchemy error message...'}}
+                    }
+                }}
+})
+async def delete_career(career_id : Annotated[int,Query(ge=0,example=203,description="Id of the career to be deleted")],
+                        session = Depends(db_connection)):
+    """Delete a career by the given id"""
+    try:
+        career = session.query(Career.name).filter_by(id=career_id).first()
+        if career is None:
+            raise Error404
+        result = session.query(Career).filter_by(id=career_id).delete()
+        if result != 1:
+            session.rollback()
+            raise Error400
+        session.commit()
+        return {'status_code': 201,'message': f'Success! Career {career[0]} was deleted successfully'}
+    except Error400:
+        raise HTTPException(status_code=400,detail={'message': 'There was an error deleting the career'})
+    except Error404:
+        raise HTTPException(status_code=404,detail={'message': f'The career with id {career_id} does not exist'})
+    except Exception as e:
+        raise HTTPException(status_code=500,detail={'message': 'Function error', 'error':str(e)})
+    except SQLAlchemyError() as e:
+        raise HTTPException(status_code=560,detail={'message': 'SQLAlchemy error','error':str(e)})
