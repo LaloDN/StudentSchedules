@@ -9,7 +9,7 @@ engine = create_engine('sqlite:///sql/school.db', echo=True)
 
 class Student(Base):
     __tablename__ = 'Students'
-    id = Column(Integer, primary_key=True,autoincrement=True)
+    id = Column(Integer, primary_key=True)
     firstName = Column(String(50),nullable=False)
     secondName = Column(String(50),nullable=False)
     studentId = Column(Integer,nullable=False,unique=True)
@@ -29,7 +29,7 @@ class Student(Base):
 
 class Asignature(Base):
     __tablename__ = 'Asignatures'
-    id = Column(Integer, primary_key=True,autoincrement=True)
+    id = Column(Integer, primary_key=True)
     name = Column(String(80),nullable=False,unique=True)
     semester = Column(Integer,nullable=False)
     careerId = Column(Integer,ForeignKey('Careers.id', ondelete='CASCADE', onupdate='CASCADE'), nullable = False)
@@ -39,7 +39,7 @@ class Asignature(Base):
 
 class Teacher(Base):
     __tablename__ = 'Teachers'
-    id = Column(Integer, primary_key=True,autoincrement=True)
+    id = Column(Integer, primary_key=True)
     employeeId = Column(Integer, nullable = False, unique = True)
     firstName = Column(String(50), nullable = False)
     secondName = Column(String(50), nullable = False)
@@ -49,20 +49,20 @@ class Teacher(Base):
 
 class Career(Base):
     __tablename__ = 'Careers'
-    id = Column(Integer, primary_key=True,autoincrement=True)
+    id = Column(Integer, primary_key=True)
     name = Column(String(40), nullable = False, unique=True)
     students = relationship('Student', backref='career')
     asignatures = relationship('Asignature', backref='career')
 
 class StudentClass(Base):
     __tablename__ = 'StudentClasses'
-    id = Column(Integer, primary_key=True,autoincrement=True)
+    id = Column(Integer, primary_key=True)
     idStudent = Column(Integer,ForeignKey('Students.id', ondelete='CASCADE', onupdate='CASCADE'),nullable = False)
     idClass = Column(Integer,ForeignKey('Classes.id', ondelete='CASCADE', onupdate='CASCADE') ,nullable = False)
 
 class Class(Base):
     __tablename__ = 'Classes'
-    id = Column(Integer, primary_key=True,autoincrement=True)
+    id = Column(Integer, primary_key=True)
     hour = Column(String(30),nullable = False)
     groupNo = Column(Integer, nullable = False, unique = True)
     idTeacher = Column(Integer,ForeignKey('Teachers.id', ondelete='CASCADE', onupdate='CASCADE'),nullable = False)

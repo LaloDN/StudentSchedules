@@ -39,7 +39,8 @@ class Asignature(BaseModel):
             }
         }
 
-class Teacher(BaseModel):
+class Teacher_Scheme(BaseModel):
+    """Teacher input model"""
     employeeId: int = Field(default=...,title='Personal employee number of the teacher in the school',ge=1000)
     firstName: str = Field(default=...,title='First name of the teacher',max_length=50)
     secondName: str = Field(default=...,title='Second name of the teacher',max_length=50)
@@ -52,6 +53,10 @@ class Teacher(BaseModel):
                 "secondName": "Mendel"
             }
         }
+
+class Teacher_DB(Teacher_Scheme):
+    """Career database model with id field"""
+    id : int = Field(title="Teacher ID", description="Id of the teacher in the database")
 
 class Career_Scheme(BaseModel):
     """Career input model"""

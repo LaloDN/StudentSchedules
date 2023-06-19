@@ -41,10 +41,10 @@ async def new_career(career: Annotated[Career_Scheme,Body], session = Depends(db
         if result is not None:
             return {'status_code':400, 'message':'Career already exists'}
         session.add(career_db)
-        result = session.query(Career.id).filter_by(name=career_dict['name']).first()[0] #Bring back the id from the database
+        result = session.query(Career.id).filter_by(name=career_dict['name']).first() #Bring back the id from the database
         if result:
             session.commit()
-            return {'status_code':201,'message':'Career created successfully!', 'id':result}
+            return {'status_code':201,'message':'Career created successfully!', 'id':result[0]}
         else:
             session.rollback()
             return {'status_code':400,'message':'There was an error creating the career'}
