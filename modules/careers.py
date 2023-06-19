@@ -10,12 +10,20 @@ router = APIRouter(prefix='/careers',tags=['Career'])
 
 @router.post('/create/',status_code=201, responses = {
     201:{
-            "description": "Item created",
+            "description": "Career item created",
             "content": {
                 "application/json": {
                     "example": {'status_code':201,'message':'Career created successfully!', 'id':435}
                 }
             }},
+    400:{
+        "description": "Career with same name already exists",
+                    "content": {
+                        "application/json": {
+                            "example": {'detail':{'message':'Career already exists in database'}}
+                        }
+            }
+        },
     500:{
             "description": "Function internal error",
             "content": {
@@ -39,7 +47,7 @@ async def new_career(career: Annotated[Career_Scheme,Body], session = Depends(db
         #Comprobe if the career name already exists
         result = session.query(Career.name).filter_by(name=career_dict['name']).first()
         if result is not None:
-            return {'status_code':400, 'message':'Career already exists'}
+            raise Error400("Career already exists in database")
         session.add(career_db)
         result = session.query(Career.id).filter_by(name=career_dict['name']).first() #Bring back the id from the database
         if result:
@@ -47,7 +55,9 @@ async def new_career(career: Annotated[Career_Scheme,Body], session = Depends(db
             return {'status_code':201,'message':'Career created successfully!', 'id':result[0]}
         else:
             session.rollback()
-            return {'status_code':400,'message':'There was an error creating the career'}
+            raise Exception("There was an error creating the career")
+    except Error400 as e:
+            raise HTTPException(status_code=400, detail={'message':str(e)})
     except Exception as e:
         raise HTTPException(status_code=500,detail={'message': 'Function error', 'error':str(e)})
     except SQLAlchemyError as e:

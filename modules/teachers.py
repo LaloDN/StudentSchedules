@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Body, HTTPException, Query, Depends
+from sqlalchemy import exc
 from typing import Annotated, List, Union
 from sqlalchemy.exc import SQLAlchemyError
 from sql.connection import db_connection
@@ -8,7 +9,37 @@ from utils import model_to_dict, Error400, Error404
 
 router = APIRouter(prefix='/teachers',tags=['Teacher'])
 
-@router.post('/create/',status_code=201)
+@router.post('/create/',status_code=201, responses={
+    201:{
+            "description": "Teacher item created",
+            "content": {
+                "application/json": {
+                    "example": {'status_code':201,'message':'Teacher registered successfully!', 'id':204}
+                }
+            }},
+    400:{
+        "description": "Teacher already exists or employee ID has already taken",
+                    "content": {
+                        "application/json": {
+                            "example": {'detail':{'message':'A teacher with the same name is already registered'}}
+                        }
+            }
+        },
+    500:{
+            "description": "Function internal error",
+            "content": {
+                "application/json": {
+                    "example": {'detail':{'message':'Function error','error':'Some Python error message...'}}
+                }
+            }},
+    560:{
+            "description": "SQLAlchemy error",
+            "content": {
+                "application/json": {
+                    "example": {'detail':{'message':'SQLAlchemy error','error':'Some SQLALchemy error message...'}}
+                }
+            }}
+})
 async def new_teacher(teacher : Annotated[Teacher_Scheme,Body], session = Depends(db_connection)):
     try:
         #Check if teacher already exists by their names and check if employee ID is unique
@@ -31,7 +62,7 @@ async def new_teacher(teacher : Annotated[Teacher_Scheme,Body], session = Depend
             return {'status_code':201,'message':'Teacher registered successfully!', 'id':result[0]}
         else:
             session.rollback()
-            return {'status_code':400,'message':'There was an error registering the teacher'}
+            raise Exception("There was an error registering the teacher")
 
     except Error400 as e:
         raise HTTPException(status_code=400, detail = {'message': str(e)})
