@@ -71,16 +71,18 @@ async def new_teacher(teacher : Annotated[Teacher_Scheme,Body], session = Depend
     except SQLAlchemyError as e:
         raise HTTPException(status_code=560, detail = {'message': 'SQLAlchemy error','error':str(e)})
 
-@router.get('/search/',status_code=210, response_model=Teacher_DB, responses={})
+@router.get('/search/',status_code=200, response_model=Teacher_DB, responses={})
 async def get_teachers(first_name : Annotated[str | None,Query(max_length=40,example="Elian")] = None,
                         second_name : Annotated[str | None,Query(max_length=40,example="Davis")] = None,
                         id: Annotated[int | None, Query(ge=1,example=201)] = None,
                         sesion = Depends(db_connection)):
     try:
         if first_name and second_name:
-            result = sesion.query(Teacher).filter(Teacher.firstName == first_name,Teacher.secondName == second_name).first()
+            result = sesion.query(Teacher).filter(Teacher.firstName.ilike(f'%{first_name}%'),
+                    Teacher.secondName.ilike(f'%{second_name}%')).first()
         elif first_name or second_name:
-            result = sesion.query(Teacher).filter(or_(Teacher.firstName == first_name,Teacher.secondName)).first()
+            result = sesion.query(Teacher).filter(or_(Teacher.firstName.ilike(f'%{first_name}%'),
+                    Teacher.secondName.ilike(f'%{second_name}%'))).first()
         elif id:
             result = sesion.query(Teacher).filter(Teacher.id == id).first()
         else:
@@ -99,5 +101,16 @@ async def get_teachers(first_name : Annotated[str | None,Query(max_length=40,exa
     except SQLAlchemyError as e:
         raise HTTPException(status_code=500,detail={'message': 'SQLAlchemy error','error':str(e)})
     except Exception as e:
-        raise HTTPException(status_code=500,detail={'message': 'Function error', 'error':str(e)})
+        raise HTTPException(status_code=560,detail={'message': 'Function error', 'error':str(e)})
         
+@router.get('/obtain/',status_code=200, response_model=List[Teacher_DB])
+async def get_teacher(session = Depends(db_connection)):
+    try:
+        result = session.query(Teacher).all()
+        teacher_dicts = [model_to_dict(row) for row in result]
+        teachers = [Teacher_DB(**t) for t in teacher_dicts]
+        return teachers
+    except Exception as e:
+        raise HTTPException(status_code=500,detail={'message': 'Function error', 'error':str(e)})
+    except SQLAlchemyError as e:
+        raise HTTPException(status_code=560,detail={'message': 'SQLAlchemy error','error':str(e)})

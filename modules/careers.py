@@ -172,7 +172,7 @@ async def get_careers(session = Depends(db_connection)) :
     except Exception as e:
         raise HTTPException(status_code=500,detail={'message': 'Function error', 'error':str(e)})
     except SQLAlchemyError as e:
-        raise HTTPException(status_code=500,detail={'message': 'SQLAlchemy error','error':str(e)})
+        raise HTTPException(status_code=560,detail={'message': 'SQLAlchemy error','error':str(e)})
 
 @router.put('/modify/',status_code = 201, responses={
     201:{
