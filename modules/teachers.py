@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Body, HTTPException, Query, Depends
-from sqlalchemy import exc
+from sqlalchemy import exc,or_
 from typing import Annotated, List, Union
 from sqlalchemy.exc import SQLAlchemyError
 from sql.connection import db_connection
@@ -70,3 +70,34 @@ async def new_teacher(teacher : Annotated[Teacher_Scheme,Body], session = Depend
         raise HTTPException(status_code=500, detail = {'message': 'Function error','error':str(e)})
     except SQLAlchemyError as e:
         raise HTTPException(status_code=560, detail = {'message': 'SQLAlchemy error','error':str(e)})
+
+@router.get('/search/',status_code=210, response_model=Teacher_DB, responses={})
+async def get_teachers(first_name : Annotated[str | None,Query(max_length=40,example="Elian")] = None,
+                        second_name : Annotated[str | None,Query(max_length=40,example="Davis")] = None,
+                        id: Annotated[int | None, Query(ge=1,example=201)] = None,
+                        sesion = Depends(db_connection)):
+    try:
+        if first_name and second_name:
+            result = sesion.query(Teacher).filter(Teacher.firstName == first_name,Teacher.secondName == second_name).first()
+        elif first_name or second_name:
+            result = sesion.query(Teacher).filter(or_(Teacher.firstName == first_name,Teacher.secondName)).first()
+        elif id:
+            result = sesion.query(Teacher).filter(Teacher.id == id).first()
+        else:
+            raise Error400
+        
+        if result is None:
+            raise Error404
+
+        teacher = Teacher_DB(**model_to_dict(result))
+        return teacher
+
+    except Error400:
+        raise HTTPException(status_code=400,detail={'message': 'You must provide either name(s) or id for the teacher to be returned'})
+    except Error404:
+        raise HTTPException(status_code=404,detail={'message': 'Record not found in the database'})
+    except SQLAlchemyError as e:
+        raise HTTPException(status_code=500,detail={'message': 'SQLAlchemy error','error':str(e)})
+    except Exception as e:
+        raise HTTPException(status_code=500,detail={'message': 'Function error', 'error':str(e)})
+        
