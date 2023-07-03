@@ -3,7 +3,7 @@ from sqlalchemy import exc,or_
 from typing import Annotated, List, Union
 from sqlalchemy.exc import SQLAlchemyError
 from sql.connection import db_connection
-from schemes import Teacher_DB, Teacher_Scheme
+from schemes import Teacher_DB, Teacher_Scheme, Teacher_Modify
 from sql.definition import Teacher
 from utils import model_to_dict, Error400, Error404
 
@@ -110,6 +110,37 @@ async def get_teacher(session = Depends(db_connection)):
         teacher_dicts = [model_to_dict(row) for row in result]
         teachers = [Teacher_DB(**t) for t in teacher_dicts]
         return teachers
+    except Exception as e:
+        raise HTTPException(status_code=500,detail={'message': 'Function error', 'error':str(e)})
+    except SQLAlchemyError as e:
+        raise HTTPException(status_code=560,detail={'message': 'SQLAlchemy error','error':str(e)})
+
+@router.put('/modify/',status_code=201)
+async def modify_teacher(teacher: Annotated[Teacher_Modify,Body],session = Depends(db_connection)):
+    try:
+        if not(teacher.employeeId or teacher.firstName or teacher.secondName):
+            raise Error400("You most specify at least one field that will be modified")
+        
+        old_record = session.query(Teacher).filter_by(id=teacher.id).first()
+        if old_record is None:
+            raise Error404
+
+        result = session.query(Teacher).filter_by(id=teacher.id).update({
+            Teacher.employeeId: teacher.employeeId if teacher.employeeId else old_record.employeeId,
+            Teacher.firstName: teacher.firstName  if teacher.firstName else old_record.firstName,
+            Teacher.secondName: teacher.secondName if teacher.secondName else old_record.secondName,
+        })
+        if result != 1:
+            session.rollback()
+            raise Error400("There was an error while updating the record")
+        session.commit()
+        new_record = session.query(Teacher).filter_by(id=teacher.id).first()
+        teacher = Teacher_DB(**model_to_dict(new_record))
+        return teacher
+    except Error400:
+        raise HTTPException(status_code=400,detail={'message': e})
+    except Error404:
+        raise HTTPException(status_code=404,detail={'message': 'Record not found in the database'})
     except Exception as e:
         raise HTTPException(status_code=500,detail={'message': 'Function error', 'error':str(e)})
     except SQLAlchemyError as e:
