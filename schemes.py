@@ -58,9 +58,9 @@ class Teacher_DB(Teacher_Scheme):
     """Career database model with id field"""
     id : int = Field(title="Teacher ID", description="Id of the teacher in the database")
 
-class Teacher_Modify(BaseModel):
-    """A teacher model to modify some record in the database"""
-    id : int = Field(title="Teacher ID", description="Id of the teacher in the database")
+class Teacher_Auxiliar(BaseModel):
+    """An axuliar model which is used to search a teacher or modify the information of a teacher"""
+    id : int = Field(default=0,title="Teacher ID", description="Id of the teacher in the database")
     employeeId: Union[int,None] = Field(default=None,title='Personal employee number of the teacher in the school',ge=1000)
     firstName: Union[str,None] = Field(default=None,title='First name of the teacher',max_length=50)
     secondName: Union[str,None] = Field(default=None,title='Second name of the teacher',max_length=50)

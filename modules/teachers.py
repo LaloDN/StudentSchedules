@@ -3,7 +3,7 @@ from sqlalchemy import exc,or_
 from typing import Annotated, List, Union
 from sqlalchemy.exc import SQLAlchemyError
 from sql.connection import db_connection
-from schemes import Teacher_DB, Teacher_Scheme, Teacher_Modify
+from schemes import Teacher_DB, Teacher_Scheme, Teacher_Auxiliar
 from sql.definition import Teacher
 from utils import model_to_dict, Error400, Error404
 
@@ -116,7 +116,7 @@ async def get_teacher(session = Depends(db_connection)):
         raise HTTPException(status_code=560,detail={'message': 'SQLAlchemy error','error':str(e)})
 
 @router.put('/modify/',status_code=201)
-async def modify_teacher(teacher: Annotated[Teacher_Modify,Body],session = Depends(db_connection)):
+async def modify_teacher(teacher: Annotated[Teacher_Auxiliar,Body],session = Depends(db_connection)):
     try:
         if not(teacher.employeeId or teacher.firstName or teacher.secondName):
             raise Error400("You most specify at least one field that will be modified")
@@ -144,4 +144,26 @@ async def modify_teacher(teacher: Annotated[Teacher_Modify,Body],session = Depen
     except Exception as e:
         raise HTTPException(status_code=500,detail={'message': 'Function error', 'error':str(e)})
     except SQLAlchemyError as e:
+        raise HTTPException(status_code=560,detail={'message': 'SQLAlchemy error','error':str(e)})
+    
+@router.delete('/erase/',status_code=201)
+async def delete_teacher(teacher_id: Annotated[int,Query(ge=0,example=12,description='Id of the teacher to be deleted')],
+                        session=Depends(db_connection)):
+    try:
+        teacher = session.query(Teacher.firstName,Teacher.secondName).filter_by(id=teacher_id).first()
+        if teacher is None:
+            raise Error404
+        result = session.query(Teacher).filter_by(id=teacher_id).delete()
+        if result != 1:
+            session.rollback()
+            raise Error400
+        session.commit()
+        return {'status_code': 201,'message': f'Success! Teacher {teacher[0]} {teacher[1]} was deleted successfully'}
+    except Error400:
+        raise HTTPException(status_code=400,detail={'message': 'There was an error deleting the teacher'})
+    except Error404:
+        raise HTTPException(status_code=404,detail={'message': f'The teacher with id {teacher_id} does not exist'})
+    except Exception as e:
+        raise HTTPException(status_code=500,detail={'message': 'Function error', 'error':str(e)})
+    except SQLAlchemyError() as e:
         raise HTTPException(status_code=560,detail={'message': 'SQLAlchemy error','error':str(e)})
