@@ -65,6 +65,16 @@ class Teacher_Auxiliar(BaseModel):
     firstName: Union[str,None] = Field(default=None,title='First name of the teacher',max_length=50)
     secondName: Union[str,None] = Field(default=None,title='Second name of the teacher',max_length=50)
 
+    class Config:
+        schema_extra ={
+            "example": {
+                "employeeId": 2004,
+                "firstName": "George",
+                "secondName": "Mendel",
+                "id": 96
+            }
+        }
+
 class Career_Scheme(BaseModel):
     """Career input model"""
     name: str = Field(default=...,title='Career name',description='Name of the career',max_length=40,example="Aviation")
