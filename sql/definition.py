@@ -27,8 +27,8 @@ class Student(Base):
         CheckConstraint(semester.between(1,100), name='gpa_range'),
     )
 
-class Asignature(Base):
-    __tablename__ = 'Asignatures'
+class Subject(Base):
+    __tablename__ = 'Subjects'
     id = Column(Integer, primary_key=True)
     name = Column(String(80),nullable=False,unique=True)
     semester = Column(Integer,nullable=False)
@@ -52,7 +52,7 @@ class Career(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(40), nullable = False, unique=True)
     students = relationship('Student', backref='career')
-    asignatures = relationship('Asignature', backref='career')
+    subjects = relationship('Subject', backref='career')
 
 class StudentClass(Base):
     __tablename__ = 'StudentClasses'
@@ -66,7 +66,7 @@ class Class(Base):
     hour = Column(String(30),nullable = False)
     groupNo = Column(Integer, nullable = False, unique = True)
     idTeacher = Column(Integer,ForeignKey('Teachers.id', ondelete='CASCADE', onupdate='CASCADE'),nullable = False)
-    idAsignature = Column(Integer,ForeignKey('Asignatures.id', ondelete='CASCADE', onupdate='CASCADE'),nullable = False)
+    idSubject = Column(Integer,ForeignKey('Subjects.id', ondelete='CASCADE', onupdate='CASCADE'),nullable = False)
     
 
 #Base.metadata.drop_all(engine)

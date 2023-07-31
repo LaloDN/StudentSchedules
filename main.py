@@ -5,8 +5,8 @@ app = FastAPI(
     title = "Student Schedules",
     description = """
     This API allows you to query information about the available school
-    asignatures and their associated teachers, also, if you're logged in you
-    can get information about the student's schedules and add new asignatures or
+    subjects and their associated teachers, also, if you're logged in you
+    can get information about the student's schedules and add new subjects or
     teachers into the database.
     """,
     version ="Alpha",
