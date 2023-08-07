@@ -50,7 +50,7 @@ async def new_teacher(teacher : Annotated[Teacher_Scheme,Body], session = Depend
             raise Error400("A teacher with the same name is already registered")
         result = session.query(Teacher).filter_by(employeeId = teacher.employeeId).first()
         if result:
-            raise Error404("The given employee ID it's already assigned")
+            raise Error400("The given employee ID it's already assigned")
 
         teacher_dict = teacher.dict()
         teacher_db = Teacher(**teacher_dict)
@@ -109,7 +109,7 @@ async def new_teacher(teacher : Annotated[Teacher_Scheme,Body], session = Depend
                 }
             }}
 })
-async def get_teachers(teacher : Annotated[Teacher_Auxiliar,Body],
+async def get_teacher(teacher : Annotated[Teacher_Auxiliar,Body],
                         sesion = Depends(db_connection)):
     """Get one teacher from the database based on the given search parameters"""
     try:
@@ -183,7 +183,7 @@ async def get_teachers(teacher : Annotated[Teacher_Auxiliar,Body],
                 }
             }}
 })
-async def get_teacher(session = Depends(db_connection)):
+async def get_teachers(session = Depends(db_connection)):
     """Get the full list of all the teachers"""
     try:
         result = session.query(Teacher).all()
@@ -253,8 +253,8 @@ async def modify_teacher(teacher: Annotated[Teacher_Auxiliar,Body],session = Dep
             raise Error400("There was an error while updating the record")
         session.commit()
         new_record = session.query(Teacher).filter_by(id=teacher.id).first()
-        teacher = Teacher_DB(**model_to_dict(new_record))
-        return teacher
+        new_teacher = Teacher_DB(**model_to_dict(new_record))
+        return new_teacher
     except Error400 as e:
         raise HTTPException(status_code=400,detail={'message': str(e)})
     except Error404:
