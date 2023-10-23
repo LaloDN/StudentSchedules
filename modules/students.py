@@ -27,21 +27,7 @@ router = APIRouter(prefix="/students",tags=["Student"])
                             "example": {'detail':{'message':'A student with the same name is already registered'}}
                         }
             }
-        },
-    500:{
-            "description": "Function internal error",
-            "content": {
-                "application/json": {
-                    "example": {'detail':{'message':'Function error','error':'Some Python error message...'}}
-                }
-            }},
-    560:{
-            "description": "SQLAlchemy error",
-            "content": {
-                "application/json": {
-                    "example": {'detail':{'message':'SQLAlchemy error','error':'Some SQLALchemy error message...'}}
-                }
-            }}
+        }
 })
 async def new_student(student :Annotated[Student_Scheme,Body],session = Depends(db_connection)):
     """Create a new student"""
@@ -75,7 +61,22 @@ async def new_student(student :Annotated[Student_Scheme,Body],session = Depends(
     except Exception as e:
         raise HTTPException(status_code=500, detail = {'message': 'Function error','error':str(e)})
   
-@router.get('/search/',status_code=200,response_model=Student_DB)
+@router.get('/search/',status_code=200,response_model=Student_DB, responses={
+    400:{
+            "description": "Bad request",
+            "content": {
+                "application/json": {
+                    "example": {'detail':{'status_code':400,'message':'You must provide either name(s) or id for the student to be returned'}}
+                }
+            }},
+    404:{
+            "description": "Student not found in database",
+            "content": {
+                "application/json": {
+                    "example": {'detail':{'status_code':404,'message':'Record not found in the database' }}
+                }
+            }}
+})
 async def get_student(student : Annotated[Student_Auxiliar,Body], session = Depends(db_connection)):
     """Search one student in the database"""
     try:
@@ -133,20 +134,6 @@ async def get_students(session=Depends(db_connection)):
             "content": {
                 "application/json": {
                     "example": {'detail':{'message':'Record not found in the database'}}
-                }
-            }},
-    500:{
-            "description": "Function internal error",
-            "content": {
-                "application/json": {
-                    "example": {'detail':{'message':'Function error','error':'Some Python error message...'}}
-                }
-            }},
-    560:{
-            "description": "SQLAlchemy error",
-            "content": {
-                "application/json": {
-                    "example": {'detail':{'message':'SQLAlchemy error','error':'Some SQLALchemy error message...'}}
                 }
             }}
 })
@@ -207,20 +194,6 @@ async def modify_student(student : Annotated[Student_Auxiliar,Body], session = D
             "content": {
                 "application/json": {
                     "example": {'detail':{'message':'Record not found in the database'}}
-                }
-            }},
-    500:{
-            "description": "Function internal error",
-            "content": {
-                "application/json": {
-                    "example": {'detail':{'message':'Function error','error':'Some Python error message...'}}
-                }
-            }},
-    560:{
-            "description": "SQLAlchemy error",
-            "content": {
-                "application/json": {
-                    "example": {'detail':{'message':'SQLAlchemy error','error':'Some SQLALchemy error message...'}}
                 }
             }}
 })

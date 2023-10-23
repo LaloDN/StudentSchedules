@@ -10,7 +10,22 @@ from utils import model_to_dict, Error400, Error404
 
 router = APIRouter(prefix='/subjects',tags=['Subject'])
 
-@router.post('/create',status_code=201)
+@router.post('/create',status_code=201,responses={
+    201:{
+            "description": "Subject item created",
+            "content": {
+                "application/json": {
+                    "example": {'status_code':201,'message':'Subject registered successfully!', 'id':1024}
+                }
+            }},
+     400:{
+        "description": "Subject already exists or the career ID dosent exist",
+                    "content": {
+                        "application/json": {
+                            "example": {'detail':{'message':'The career with the id 12 does not exist in the database'}}
+                        }
+            }}
+})
 async def new_subject(subject: Annotated[Subject_Scheme,Body],session = Depends(db_connection)):
     """Crates a new subject"""
     try:
@@ -39,8 +54,24 @@ async def new_subject(subject: Annotated[Subject_Scheme,Body],session = Depends(
     except Exception as e:
         raise HTTPException(status_code=500, detail = {'message': 'Function error','error':str(e)})
 
-@router.get('/search/',status_code=200,response_model=Subject_DB)
+@router.get('/search/',status_code=200,response_model=Subject_DB,responses={
+    400:{
+            "description": "Bad request",
+            "content": {
+                "application/json": {
+                    "example": {'detail':{'status_code':400,'message':'You must provide either name or id for the subject to be returned'}}
+                }
+            }},
+    404:{
+            "description": "Subject not found in database",
+            "content": {
+                "application/json": {
+                    "example": {'detail':{'status_code':404,'message':'Record not found in the database' }}
+                }
+        }}
+})
 async def search_subject(subject: Annotated[Subject_Auxiliar,Body], session = Depends(db_connection)):
+    """Search one subject by their name or id in the database"""
     try:
         subject: Subject_Auxiliar
         if subject.id:
@@ -64,6 +95,7 @@ async def search_subject(subject: Annotated[Subject_Auxiliar,Body], session = De
 
 @router.get('/obtain/',status_code=200,response_model=List[Subject_DB])
 async def get_subjects(session = Depends(db_connection)):
+    """Get a full list of subjects"""
     try:
         results = session.query(Subject).all()
         subjects_dict = [model_to_dict(row) for row in results]
@@ -76,6 +108,7 @@ async def get_subjects(session = Depends(db_connection)):
 
 @router.put('/modify/',status_code=201,response_model=Subject_Auxiliar)
 async def modify_subject(subject: Annotated[Subject_Auxiliar,Body],session : Session= Depends(db_connection)):
+    """Modify the fields of one subject"""
     try:
         subject: Subject_Auxiliar
         old_subject: Subject
@@ -115,6 +148,7 @@ async def modify_subject(subject: Annotated[Subject_Auxiliar,Body],session : Ses
 @router.delete('/erase/',status_code=201)
 async def delete_subject(subject_id : Annotated[int,Query(default=...,ge=1,title='Subject ID',description='Id of the subject to be deleted',example=208)],
                         session = Depends(db_connection)):
+    """Deletes one subject by their id"""
     try:
         session: Session
         subject = session.query(Subject.name).filter_by(id = subject_id).first()

@@ -18,6 +18,22 @@ app = FastAPI(
         "name": "Apache 2.0",
         "url": "https://www.apache.org/licenses/LICENSE-2.0.html",
     },
+    responses={
+        500:{
+            "description": "Function internal error",
+            "content": {
+                "application/json": {
+                    "example": {'status_code': 500,'detail':{'message':'Function error','error':'Some Python error message...'}}
+                }
+            }},
+        560:{
+            "description": "SQLAlchemy error",
+            "content": {
+                "application/json": {
+                    "example": {'status_code':560,'detail':{'message':'SQLAlchemy error','error':'Some SQLALchemy error message...'}}
+                }
+            }}
+    }
 )
 
 app.include_router(students.router)

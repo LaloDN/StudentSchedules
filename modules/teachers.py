@@ -24,21 +24,7 @@ router = APIRouter(prefix='/teachers',tags=['Teacher'])
                             "example": {'detail':{'message':'A teacher with the same name is already registered'}}
                         }
             }
-        },
-    500:{
-            "description": "Function internal error",
-            "content": {
-                "application/json": {
-                    "example": {'detail':{'message':'Function error','error':'Some Python error message...'}}
-                }
-            }},
-    560:{
-            "description": "SQLAlchemy error",
-            "content": {
-                "application/json": {
-                    "example": {'detail':{'message':'SQLAlchemy error','error':'Some SQLALchemy error message...'}}
-                }
-            }}
+        }
 })
 async def new_teacher(teacher : Annotated[Teacher_Scheme,Body], session = Depends(db_connection)):
     """Create a new teacher"""
@@ -92,20 +78,6 @@ async def new_teacher(teacher : Annotated[Teacher_Scheme,Body], session = Depend
             "content": {
                 "application/json": {
                     "example": {'detail':{'message': 'Record not found in the database'}} 
-                }
-            }},
-    500:{
-            "description": "Function internal error",
-            "content": {
-                "application/json": {
-                    "example": {'detail':{'message':'Function error','error':'Some Python error message...'}}
-                }
-            }},
-    560:{
-            "description": "SQLAlchemy error",
-            "content": {
-                "application/json": {
-                    "example": {'detail':{'message':'SQLAlchemy error','error':'Some SQLALchemy error message...'}}
                 }
             }}
 })
@@ -167,20 +139,6 @@ async def get_teacher(teacher : Annotated[Teacher_Auxiliar,Body],
                                 }
                             ]
                 }
-            }},
-    500:{
-            "description": "Function internal error",
-            "content": {
-                "application/json": {
-                    "example": {'detail':{'message':'Function error','error':'Some Python error message...'}}
-                }
-            }},
-    560:{
-            "description": "SQLAlchemy error",
-            "content": {
-                "application/json": {
-                    "example": {'detail':{'message':'SQLAlchemy error','error':'Some SQLALchemy error message...'}}
-                }
             }}
 })
 async def get_teachers(session = Depends(db_connection)):
@@ -215,20 +173,6 @@ async def get_teachers(session = Depends(db_connection)):
             "content": {
                 "application/json": {
                     "example": {'detail':{'message':'Record not found in the database'}}
-                }
-            }},
-    500:{
-            "description": "Function internal error",
-            "content": {
-                "application/json": {
-                    "example": {'detail':{'message':'Function error','error':'Some Python error message...'}}
-                }
-            }},
-    560:{
-            "description": "SQLAlchemy error",
-            "content": {
-                "application/json": {
-                    "example": {'detail':{'message':'SQLAlchemy error','error':'Some SQLALchemy error message...'}}
                 }
             }}
 })
@@ -284,20 +228,6 @@ async def modify_teacher(teacher: Annotated[Teacher_Auxiliar,Body],session = Dep
             "content": {
                 "application/json": {
                     "example": {'detail':{'message':'Record not found in the database'}}
-                }
-            }},
-    500:{
-            "description": "Function internal error",
-            "content": {
-                "application/json": {
-                    "example": {'detail':{'message':'Function error','error':'Some Python error message...'}}
-                }
-            }},
-    560:{
-            "description": "SQLAlchemy error",
-            "content": {
-                "application/json": {
-                    "example": {'detail':{'message':'SQLAlchemy error','error':'Some SQLALchemy error message...'}}
                 }
             }}
 })
