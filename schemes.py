@@ -60,7 +60,7 @@ class Subject_DB(Subject_Scheme):
     """Subject model with id field"""
     id : int = Field(title="Subject ID",description="Id of the subject in the database")
 
-class Subject_Auxiliar():
+class Subject_Auxiliar(BaseModel):
     """An auxiliar model which is used to search a student or modify the information of a student"""
     id : int = Field(default=0,title="Student ID",description="Id of the subject in the database")
     name: Union[str,None] = Field(default=None,title='Name of the subject',max_length=80)
