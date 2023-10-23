@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from modules import students, careers, teachers
+from modules import students, careers, teachers, subjects
 
 app = FastAPI(
     title = "Student Schedules",
@@ -23,6 +23,7 @@ app = FastAPI(
 app.include_router(students.router)
 app.include_router(careers.router)
 app.include_router(teachers.router)
+app.include_router(subjects.router)
 
 @app.get("/")
 async def root():

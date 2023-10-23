@@ -66,16 +66,15 @@ async def new_student(student :Annotated[Student_Scheme,Body],session = Depends(
         if result:
             session.commit()
             return {'status_code':201,'message':'Student registered successfully!', 'id':result[0]}
-        else:
-            session.rollback()
-            raise Exception("There was an error registering the student")       
+        session.rollback()
+        raise Exception("There was an error registering the student")       
     except Error400 as e:
         raise HTTPException(status_code=400, detail = {'message': str(e)})
-    except Exception as e:
-        raise HTTPException(status_code=500, detail = {'message': 'Function error','error':str(e)})
     except SQLAlchemyError as e:
         raise HTTPException(status_code=560, detail = {'message': 'SQLAlchemy error','error':str(e)})
-
+    except Exception as e:
+        raise HTTPException(status_code=500, detail = {'message': 'Function error','error':str(e)})
+  
 @router.get('/search/',status_code=200,response_model=Student_DB)
 async def get_student(student : Annotated[Student_Auxiliar,Body], session = Depends(db_connection)):
     """Search one student in the database"""
@@ -242,7 +241,8 @@ async def delete_student(student_id: Annotated[int,Query(ge=0,example=204,descri
         raise HTTPException(status_code=400,detail={'message': 'There was an error deleting the student'})
     except Error404:
         raise HTTPException(status_code=404,detail={'message': f'The student with id {student_id} does not exist'})
-    except Exception as e:
-        raise HTTPException(status_code=500,detail={'message': 'Function error', 'error':str(e)})
     except SQLAlchemyError() as e:
         raise HTTPException(status_code=560,detail={'message': 'SQLAlchemy error','error':str(e)})
+    except Exception as e:
+        raise HTTPException(status_code=500,detail={'message': 'Function error', 'error':str(e)})
+ 

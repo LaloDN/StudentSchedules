@@ -67,10 +67,10 @@ async def new_teacher(teacher : Annotated[Teacher_Scheme,Body], session = Depend
 
     except Error400 as e:
         raise HTTPException(status_code=400, detail = {'message': str(e)})
-    except Exception as e:
-        raise HTTPException(status_code=500, detail = {'message': 'Function error','error':str(e)})
     except SQLAlchemyError as e:
         raise HTTPException(status_code=560, detail = {'message': 'SQLAlchemy error','error':str(e)})
+    except Exception as e:
+        raise HTTPException(status_code=500, detail = {'message': 'Function error','error':str(e)})
 
 @router.get('/search/',status_code=200, response_model=Teacher_DB, responses={
     200:{
@@ -190,10 +190,10 @@ async def get_teachers(session = Depends(db_connection)):
         teacher_dicts = [model_to_dict(row) for row in result]
         teachers = [Teacher_DB(**t) for t in teacher_dicts]
         return teachers
-    except Exception as e:
-        raise HTTPException(status_code=500,detail={'message': 'Function error', 'error':str(e)})
     except SQLAlchemyError as e:
         raise HTTPException(status_code=560,detail={'message': 'SQLAlchemy error','error':str(e)})
+    except Exception as e:
+        raise HTTPException(status_code=500,detail={'message': 'Function error', 'error':str(e)})
 
 @router.put('/modify/',status_code=201,response_model=Teacher_DB, responses={
     201:{
@@ -259,10 +259,10 @@ async def modify_teacher(teacher: Annotated[Teacher_Auxiliar,Body],session = Dep
         raise HTTPException(status_code=400,detail={'message': str(e)})
     except Error404:
         raise HTTPException(status_code=404,detail={'message': 'Record not found in the database'})
-    except Exception as e:
-        raise HTTPException(status_code=500,detail={'message': 'Function error', 'error':str(e)})
     except SQLAlchemyError as e:
         raise HTTPException(status_code=560,detail={'message': 'SQLAlchemy error','error':str(e)})
+    except Exception as e:
+        raise HTTPException(status_code=500,detail={'message': 'Function error', 'error':str(e)})
     
 @router.delete('/erase/',status_code=201, responses={
     201:{
@@ -318,7 +318,7 @@ async def delete_teacher(teacher_id: Annotated[int,Query(ge=0,example=12,descrip
         raise HTTPException(status_code=400,detail={'message': 'There was an error deleting the teacher'})
     except Error404:
         raise HTTPException(status_code=404,detail={'message': f'The teacher with id {teacher_id} does not exist'})
+    except SQLAlchemyError as e:
+        raise HTTPException(status_code=560,detail={'message': 'SQLAlchemy error','error':str(e)})
     except Exception as e:
         raise HTTPException(status_code=500,detail={'message': 'Function error', 'error':str(e)})
-    except SQLAlchemyError() as e:
-        raise HTTPException(status_code=560,detail={'message': 'SQLAlchemy error','error':str(e)})

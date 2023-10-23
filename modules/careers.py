@@ -58,10 +58,10 @@ async def new_career(career: Annotated[Career_Scheme,Body], session = Depends(db
             raise Exception("There was an error creating the career")
     except Error400 as e:
             raise HTTPException(status_code=400, detail={'message':str(e)})
-    except Exception as e:
-        raise HTTPException(status_code=500,detail={'message': 'Function error', 'error':str(e)})
     except SQLAlchemyError as e:
         raise HTTPException(status_code=560,detail={'message': 'SQLAlchemy error', 'error':str(e)})
+    except Exception as e:
+        raise HTTPException(status_code=500,detail={'message': 'Function error', 'error':str(e)})
 
 @router.get('/search/',status_code=200, response_model = Career_DB, responses={
     200:{
@@ -169,10 +169,10 @@ async def get_careers(session = Depends(db_connection)) :
         career_dicts = [model_to_dict(row) for row in result]
         careers = [Career_DB(**c) for c in career_dicts]
         return careers
+    except SQLAlchemyError as e:
+        raise HTTPException(status_code=560,detail={'message': 'SQLAlchemy error', 'error':str(e)})
     except Exception as e:
         raise HTTPException(status_code=500,detail={'message': 'Function error', 'error':str(e)})
-    except SQLAlchemyError as e:
-        raise HTTPException(status_code=560,detail={'message': 'SQLAlchemy error','error':str(e)})
 
 @router.put('/modify/',status_code = 201, responses={
     201:{
@@ -230,10 +230,11 @@ async def modify_career(career_id : Annotated[int,Query(ge=0,example=14,descript
         raise HTTPException(status_code=400,detail={'message': 'There was an error updating the career'})
     except Error404:
         raise HTTPException(status_code=404,detail={'message': f'The career with id {career_id} does not exist'})
+    except SQLAlchemyError as e:
+        raise HTTPException(status_code=560,detail={'message': 'SQLAlchemy error', 'error':str(e)})
     except Exception as e:
         raise HTTPException(status_code=500,detail={'message': 'Function error', 'error':str(e)})
-    except SQLAlchemyError() as e:
-        raise HTTPException(status_code=560,detail={'message': 'SQLAlchemy error','error':str(e)})
+   
 
 @router.delete('/erase/',status_code = 201, responses={
         201:{
@@ -289,7 +290,7 @@ async def delete_career(career_id : Annotated[int,Query(ge=0,example=203,descrip
         raise HTTPException(status_code=400,detail={'message': 'There was an error deleting the career'})
     except Error404:
         raise HTTPException(status_code=404,detail={'message': f'The career with id {career_id} does not exist'})
+    except SQLAlchemyError as e:
+        raise HTTPException(status_code=560,detail={'message': 'SQLAlchemy error', 'error':str(e)})
     except Exception as e:
         raise HTTPException(status_code=500,detail={'message': 'Function error', 'error':str(e)})
-    except SQLAlchemyError() as e:
-        raise HTTPException(status_code=560,detail={'message': 'SQLAlchemy error','error':str(e)})

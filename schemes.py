@@ -56,6 +56,18 @@ class Subject_Scheme(BaseModel):
             }
         }
 
+class Subject_DB(Subject_Scheme):
+    """Subject model with id field"""
+    id : int = Field(title="Subject ID",description="Id of the subject in the database")
+
+class Subject_Auxiliar():
+    """An auxiliar model which is used to search a student or modify the information of a student"""
+    id : int = Field(default=0,title="Student ID",description="Id of the subject in the database")
+    name: Union[str,None] = Field(default=None,title='Name of the subject',max_length=80)
+    semester: Union[int,None] = Field(default=0,title='Grade to which it belongs the subject',ge=1,le=10)
+    careerId: Union[int,None] = Field(default=0,title='Database ID of the subject career to which it belongs')
+
+
 class Teacher_Scheme(BaseModel):
     """Teacher input model"""
     employeeId: int = Field(default=...,title='Personal employee number of the teacher in the school',ge=1000)
