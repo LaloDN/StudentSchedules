@@ -10,9 +10,39 @@ from sql.definition import Student
 from utils import Error400, Error404
 from datetime import datetime
 
-router = APIRouter(prefix="/students")
+router = APIRouter(prefix="/students",tags=["Student"])
 
-@router.post('/create/',status_code=201,tags=['Student'])
+@router.post('/create/',status_code=201,responses={
+    201:{
+            "description": "Teacher item created",
+            "content": {
+                "application/json": {
+                    "example": {'status_code':201,'message':'Student registered successfully!', 'id':88}
+                }
+            }},
+    400:{
+        "description": "Teacher already exists or employee ID has already taken",
+                    "content": {
+                        "application/json": {
+                            "example": {'detail':{'message':'A student with the same name is already registered'}}
+                        }
+            }
+        },
+    500:{
+            "description": "Function internal error",
+            "content": {
+                "application/json": {
+                    "example": {'detail':{'message':'Function error','error':'Some Python error message...'}}
+                }
+            }},
+    560:{
+            "description": "SQLAlchemy error",
+            "content": {
+                "application/json": {
+                    "example": {'detail':{'message':'SQLAlchemy error','error':'Some SQLALchemy error message...'}}
+                }
+            }}
+})
 async def new_student(student :Annotated[Student_Scheme,Body],session = Depends(db_connection)):
     """Create a new student"""
     try:
@@ -24,7 +54,7 @@ async def new_student(student :Annotated[Student_Scheme,Body],session = Depends(
             raise Error400('A student with the same name is already registered')
         result = session.query(Student).filter_by(studentId = student.studentId).first()
         if result:
-            raise Error400('A student with the same student is already registered')
+            raise Error400('A student with the same student id is already registered')
         #Parse the date string from request to date
         birthday = datetime.strptime(student.birthday,'%Y-%m-%d')
         student.birthday = birthday.date()
@@ -91,7 +121,36 @@ async def get_students(session=Depends(db_connection)):
     except Exception as e:
         raise HTTPException(status_code=560,detail={'message': 'Function error', 'error':str(e)})
     
-@router.put('/modify/',status_code=201, response_model=Student_DB)
+@router.put('/modify/',status_code=201, response_model=Student_DB,responses={
+    400:{
+            "description": "Bad request: missing required fields or the data updates more or less than one item at once",
+            "content": {
+                "application/json": {
+                    "example": {'detail':{'message':'You most specify at least one field that will be modified'}}
+                }
+            }},
+    404:{
+            "description": "Student item not found in the database",
+            "content": {
+                "application/json": {
+                    "example": {'detail':{'message':'Record not found in the database'}}
+                }
+            }},
+    500:{
+            "description": "Function internal error",
+            "content": {
+                "application/json": {
+                    "example": {'detail':{'message':'Function error','error':'Some Python error message...'}}
+                }
+            }},
+    560:{
+            "description": "SQLAlchemy error",
+            "content": {
+                "application/json": {
+                    "example": {'detail':{'message':'SQLAlchemy error','error':'Some SQLALchemy error message...'}}
+                }
+            }}
+})
 async def modify_student(student : Annotated[Student_Auxiliar,Body], session = Depends(db_connection)):
     """Modify the fields of one student"""
     try:
@@ -129,7 +188,43 @@ async def modify_student(student : Annotated[Student_Auxiliar,Body], session = D
     except Exception as e:
         raise HTTPException(status_code=560,detail={'message': 'Function error', 'error':str(e)})   
 
-@router.delete('/erase/',status_code=201)
+@router.delete('/erase/',status_code=201,responses={
+     201:{
+            "description": "Student item removed successfully",
+            "content": {
+                "application/json": {
+                    "example": {'status_code': 201,'message': f'Success! Student John Winston was deleted successfully'}
+                }
+            }},
+    400:{
+            "description": "The student cannot be removed",
+            "content": {
+                "application/json": {
+                    "example": {'detail':{'message':'There was an error deleting the student'}}
+                }
+            }},
+    404:{
+            "description": "Student item not found in the database",
+            "content": {
+                "application/json": {
+                    "example": {'detail':{'message':'Record not found in the database'}}
+                }
+            }},
+    500:{
+            "description": "Function internal error",
+            "content": {
+                "application/json": {
+                    "example": {'detail':{'message':'Function error','error':'Some Python error message...'}}
+                }
+            }},
+    560:{
+            "description": "SQLAlchemy error",
+            "content": {
+                "application/json": {
+                    "example": {'detail':{'message':'SQLAlchemy error','error':'Some SQLALchemy error message...'}}
+                }
+            }}
+})
 async def delete_student(student_id: Annotated[int,Query(ge=0,example=204,description="Id of the student to be deleted")],
                             session = Depends(db_connection)):
     """Deletes one student from the database by their id"""

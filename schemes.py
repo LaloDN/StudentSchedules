@@ -19,7 +19,7 @@ class Student_Scheme(BaseModel):
                 "firstName": "Horacio",
                 "secondName": "Gomez",
                 "studentId": 19930,
-                "birthday": "22-04-2011",
+                "birthday": "2002-04-11",
                 "semester": 2,
                 "gpa": 77.8,
                 "careerId": 2
