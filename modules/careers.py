@@ -23,21 +23,7 @@ router = APIRouter(prefix='/careers',tags=['Career'])
                             "example": {'detail':{'message':'Career already exists in database'}}
                         }
             }
-        },
-    500:{
-            "description": "Function internal error",
-            "content": {
-                "application/json": {
-                    "example": {'detail':{'message':'Function error','error':'Some Python error message...'}}
-                }
-            }},
-    560:{
-            "description": "SQLAlchemy error",
-            "content": {
-                "application/json": {
-                    "example": {'detail':{'message':'SQLAlchemy error','error':'Some SQLALchemy error message...'}}
-                }
-            }}
+        }
 })
 async def new_career(career: Annotated[Career_Scheme,Body], session = Depends(db_connection)):
     """Creates a new career"""
@@ -83,20 +69,6 @@ async def new_career(career: Annotated[Career_Scheme,Body], session = Depends(db
         "content": {
             "application/json": {
                 "example": {'detail':{'message':'Record not found in the database'}}
-            }
-        }},
-    500:{
-        "description": "Function internal error",
-        "content": {
-            "application/json": {
-                "example": {'detail':{'message':'Function error','error':'Some Python error message...'}}
-            }
-        }},
-    560:{
-        "description": "SQLAlchemy error",
-        "content": {
-            "application/json": {
-                "example": {'detail':{'message':'SQLAlchemy error','error':'Some SQLALchemy error message...'}}
             }
         }}
 })
@@ -146,20 +118,6 @@ async def get_careers(name : Annotated[str | None,Query(max_length=40,example="A
                     }
                 ]
             }
-        }},
-    500:{
-        "description": "Function internal error",
-        "content": {
-            "application/json": {
-                "example": {'detail':{'message':'Function error','error':'Some Python error message...'}}
-            }
-        }},
-    560:{
-        "description": "SQLAlchemy error",
-        "content": {
-            "application/json": {
-                "example": {'detail':{'message':'SQLAlchemy error','error':'Some SQLALchemy error message...'}}
-            }
         }}
 })
 async def get_careers(session = Depends(db_connection)) :
@@ -194,20 +152,6 @@ async def get_careers(session = Depends(db_connection)) :
         "content": {
             "application/json": {
                 "example": {'detail':{'message':'The career with id 204 does not exist'}}
-            }
-        }},
-    500:{
-        "description": "Function internal error",
-        "content": {
-            "application/json": {
-                "example": {'detail':{'message':'Function error','error':'Some Python error message...'}}
-            }
-        }},
-    560:{
-        "description": "SQLAlchemy error",
-        "content": {
-            "application/json": {
-                "example": {'detail':{'message':'SQLAlchemy error','error':'Some SQLALchemy error message...'}}
             }
         }}
 })
@@ -257,21 +201,7 @@ async def modify_career(career_id : Annotated[int,Query(ge=0,example=14,descript
                 "application/json": {
                     "example": {'detail':{'message':'The career with id 644 does not exist'}}
                 }
-            }},
-        500:{
-                "description": "Function internal error",
-                "content": {
-                    "application/json": {
-                        "example": {'detail':{'message':'Function error','error':'Some Python error message...'}}
-                    }
-                }},
-        560:{
-                "description": "SQLAlchemy error",
-                "content": {
-                    "application/json": {
-                        "example": {'detail':{'message':'SQLAlchemy error','error':'Some SQLALchemy error message...'}}
-                    }
-                }}
+            }}
 })
 async def delete_career(career_id : Annotated[int,Query(ge=0,example=203,description="Id of the career to be deleted")],
                         session = Depends(db_connection)):
