@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 from datetime import date
 from typing import Union
 
-
+#region student
 class Student_Scheme(BaseModel):
     """Student input model"""
     firstName: str = Field(default=...,title='Fist name of the student',max_length=50)
@@ -40,7 +40,9 @@ class Student_Auxiliar(BaseModel):
     semester: Union[int,None] = Field(default=None,title='Current grade of the student',ge=1,le=10)
     gpa: Union[float,None] = Field(default=None,title='Grade point average of the student',ge=0,le=100)
     careerId: Union[int,None] = Field(default=None,title='Database ID of the student career')
+#endregion
 
+#region subject
 class Subject_Scheme(BaseModel):
     """Subject input model"""
     name: str = Field(default=...,title='Name of the subject',max_length=80)
@@ -67,7 +69,18 @@ class Subject_Auxiliar(BaseModel):
     semester: Union[int,None] = Field(default=0,title='Grade to which it belongs the subject',ge=1,le=10)
     careerId: Union[int,None] = Field(default=0,title='Database ID of the subject career to which it belongs')
 
+    class Config:
+        schema_extra ={
+            "example": {
+                "id": 23,
+                "name": "Phisical Education IV",
+                "semster": 5,
+                "careerId": 3
+            }
+        }
+#endregion
 
+#region teacher
 class Teacher_Scheme(BaseModel):
     """Teacher input model"""
     employeeId: int = Field(default=...,title='Personal employee number of the teacher in the school',ge=1000)
@@ -103,7 +116,9 @@ class Teacher_Auxiliar(BaseModel):
                 "id": 96
             }
         }
+#endregion
 
+#region career
 class Career_Scheme(BaseModel):
     """Career input model"""
     name: str = Field(default=...,title='Career name',description='Name of the career',max_length=40,example="Aviation")
@@ -111,42 +126,11 @@ class Career_Scheme(BaseModel):
 class Career_DB(Career_Scheme):
     """Career database model with id field"""
     id : int = Field(title="Career ID",description='Id of the career in the database')
-    
-    class Config:
-        schema_extra ={
-            "single_example": {
-                "id": 20,
-                "name": "Elementary education"
-            },
-            "list_example":[
-                {
-                    "id": 4,
-                    "name": "Robotics"
-                },
-                {
-                    "id": 37,
-                    "name": "Electronic engineering"
-                },
-                {
-                    "id": 122,
-                    "name": "Aviation"
-                }
-            ]
-        }
+#endregion
 
-class StudentSubject(BaseModel):
-    idStudent: int = Field(default=...,title='Database ID of the student')
-    idSubject: int = Field(default=...,title='Database ID of the subject')
-
-    class Config:
-        schema_extra ={
-            "example": {
-                "idStudent": 23003,
-                "idSubject": 4,
-            }
-        }
-
-class TeacherSubject(BaseModel):
+#region class
+class Classes_Scheme(BaseModel):
+    """Classes input model"""
     hour: str = Field(default=...,title='Schedule of the class',max_length=30)
     groupNo: int = Field(default=...,title='Number of the group class',ge=100,le=999)
     idTeacher: int = Field(default=...,title='Database ID of the teacher')
@@ -161,3 +145,44 @@ class TeacherSubject(BaseModel):
                 "idSubject": 13
             }
         }
+
+class Classes_DB(Classes_Scheme):
+    """Classes database model with an ID"""
+    id : int = Field(title='Classes ID',description='ID of the class inside the database')
+
+class Classes_Auxiliar(BaseModel):
+    """An axuliar model which is used to search a class or modify the information of a class"""
+    id : int = Field(default=0,title="Class ID", description="Id of the class in the database") 
+    hour: str = Field(default=None,title='Schedule of the class',max_length=30)
+    groupNo: Union[int,None] = Field(default=None,title='Number of the group class',ge=100,le=999)
+    idTeacher: Union[int,None] = Field(default=None,title='Database ID of the teacher')
+    idSubject: Union[int,None] = Field(default=None,title='Database ID of the subject')
+
+    class Config:
+        schema_extra ={
+            "example": {
+                "hour": "14:00:00",
+                "groupNo": 340,
+                "idTeacher": 2003,
+                "idSubject": 13
+            }
+        }
+#endregion
+
+class StudentClasses_Scheme(BaseModel):
+    """Student-Classes input model"""
+    idStudent: int = Field(default=...,title='Student ID',description='Database ID of the student')
+    idClass: int = Field(default=...,title='Class ID',description='Database ID of the class')
+
+    class Config:
+        schema_extra ={
+            "example": {
+                "idStudent": 23003,
+                "idClass": 4,
+            }
+        }
+
+class StudentClasses_DB(StudentClasses_Scheme):
+    """Student Class database model with ID field"""
+    id: int = Field(title='StudentClasses ID',description='Database ID of the student-class')
+

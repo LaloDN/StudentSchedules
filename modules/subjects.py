@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Body, HTTPException, Query, Depends
-from sqlalchemy import exc,or_
 from typing import Annotated, List, Union
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
@@ -54,6 +53,7 @@ async def new_subject(subject: Annotated[Subject_Scheme,Body],session = Depends(
     except Exception as e:
         raise HTTPException(status_code=500, detail = {'message': 'Function error','error':str(e)})
 
+
 @router.get('/search/',status_code=200,response_model=Subject_DB,responses={
     400:{
             "description": "Bad request",
@@ -93,7 +93,35 @@ async def search_subject(subject: Annotated[Subject_Auxiliar,Body], session = De
     except Exception as e:
         raise HTTPException(status_code=500, detail = {'message': 'Function error','error':str(e)})
 
-@router.get('/obtain/',status_code=200,response_model=List[Subject_DB])
+
+@router.get('/obtain/',status_code=200,response_model=List[Subject_DB], responses={
+     200:{
+        "description": "Subject items retrieved successfully",
+        "content": {
+            "application/json": {
+                "example":[
+                {
+                    "id": 91,
+                    "name": "Introduction to Mongo DB",
+                    "semester": 4,
+                    "careerId": 12
+                },
+                {
+                    "id": 538,
+                    "name": "Nuclear physics",
+                    "semester": 8,
+                    "careerId": 24
+                },
+                {
+                    "id": 122,
+                    "name": "Calculus III",
+                    "semester": 3,
+                    "careerId": 1
+               }
+            ]
+            }
+        }}
+})
 async def get_subjects(session = Depends(db_connection)):
     """Get a full list of subjects"""
     try:
@@ -106,7 +134,23 @@ async def get_subjects(session = Depends(db_connection)):
     except Exception as e:
         raise HTTPException(status_code=560,detail={'message': 'Function error', 'error':str(e)})
 
-@router.put('/modify/',status_code=201,response_model=Subject_Auxiliar)
+
+@router.put('/modify/',status_code=201,response_model=Subject_Auxiliar,responses={
+    400:{
+            "description": "Bad request: missing required fields or the data updates more or less than one item at once",
+            "content": {
+                "application/json": {
+                    "example": {'detail':{'message':'You most specify at least one field that will be modified'}}
+                }
+            }},
+    404:{
+            "description": "Subject item not found in the database",
+            "content": {
+                "application/json": {
+                    "example": {'detail':{'message':'Record not found in the database'}}
+                }
+            }}
+})
 async def modify_subject(subject: Annotated[Subject_Auxiliar,Body],session : Session= Depends(db_connection)):
     """Modify the fields of one subject"""
     try:
@@ -145,7 +189,30 @@ async def modify_subject(subject: Annotated[Subject_Auxiliar,Body],session : Ses
     except Exception as e:
         raise HTTPException(status_code=500,detail={'message': 'Function error', 'error':str(e)})
 
-@router.delete('/erase/',status_code=201)
+
+@router.delete('/erase/',status_code=201, responses={
+    201:{
+            "description": "Subject item removed successfully",
+            "content": {
+                "application/json": {
+                    "example": {'status_code': 201,'message': f'Success! Subject Water Physics was deleted successfully'}
+                }
+            }},
+    400:{
+            "description": "The subject cannot be removed",
+            "content": {
+                "application/json": {
+                    "example": {'detail':{'message':'There was an error deleting the subject'}}
+                }
+            }},
+    404:{
+            "description": "Subject item not found in the database",
+            "content": {
+                "application/json": {
+                    "example": {'detail':{'message':'Record not found in the database'}}
+                }
+            }}
+})
 async def delete_subject(subject_id : Annotated[int,Query(default=...,ge=1,title='Subject ID',description='Id of the subject to be deleted',example=208)],
                         session = Depends(db_connection)):
     """Deletes one subject by their id"""
