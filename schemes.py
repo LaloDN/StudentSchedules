@@ -155,8 +155,8 @@ class Classes_Auxiliar(BaseModel):
     id : int = Field(default=0,title="Class ID", description="Id of the class in the database") 
     hour: str = Field(default=None,title='Schedule of the class',max_length=30)
     groupNo: Union[int,None] = Field(default=None,title='Number of the group class',ge=100,le=999)
-    idTeacher: Union[int,None] = Field(default=None,title='Database ID of the teacher')
-    idSubject: Union[int,None] = Field(default=None,title='Database ID of the subject')
+    idTeacher: Union[int,None] = Field(default=None,title='Database ID of the teacher',gt=0)
+    idSubject: Union[int,None] = Field(default=None,title='Database ID of the subject',gt=0)
 
     class Config:
         schema_extra ={

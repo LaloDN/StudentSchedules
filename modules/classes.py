@@ -7,20 +7,21 @@ from schemes import  Classes_Scheme, Classes_DB, Classes_Auxiliar
 from sql.definition import Class, Teacher, Subject
 from utils import model_to_dict, Error400, Error404
 from datetime import datetime
+import re
 
 router = APIRouter(prefix='/classes',tags=["Class"])
 
-@router.post('/create',status_code=201)
+@router.post('/create/',status_code=201)
 async def new_class(class_item : Annotated[Classes_Scheme,Body], session = Depends(db_connection)):
     try:
         class_item : Classes_Scheme
         session : Session
 
         #Hour in format hh:mm AM/PM
-        try:
-            datetime.today().strftime("%H:%M %p")
-        except:
-            return -1
+        pattern = r'^\d{1,2}:\d{2} [APap][Mm]$'
+        class_item.hour =class_item.hour.upper()
+        if not re.match(pattern,class_item.hour):
+            raise Error400("The hour isn't in format hh:mm AM/PM") 
         #Check if teacher and subject exists
         teacher = session.query(Teacher.id).filter_by(id = class_item.idTeacher).first()
         if teacher is None:
@@ -58,3 +59,97 @@ async def new_class(class_item : Annotated[Classes_Scheme,Body], session = Depen
         raise HTTPException(status_code=560, detail = {'message': 'SQLAlchemy error','error':str(e)})
     except Exception as e:
         raise HTTPException(status_code=500, detail = {'message': 'Function error','error':str(e)})
+
+
+@router.get('/search/',status_code=200, response_model=Classes_DB)
+async def get_class(group_no: Annotated[int,Query(default=...,title='Group number',description='Number of the class group',gt=0)],
+                        session = Depends(db_connection)):
+    try:
+        session : Session
+        class_item = session.query(Class).filter_by(groupNo = group_no).first()
+        if not class_item:
+            raise Error404
+        class_dict = model_to_dict(class_item)
+        return class_dict
+    except Error404 as e:
+        raise HTTPException(status_code=404,detail={'message':f'The class with the group number #{group_no} does not exists'})
+    except SQLAlchemyError as e:
+        raise HTTPException(status_code=560, detail = {'message': 'SQLAlchemy error','error':str(e)})
+    except Exception as e:
+        raise HTTPException(status_code=500, detail = {'message': 'Function error','error':str(e)})
+
+
+@router.get('/obtain/',status_code=200,response_model=List[Classes_DB])
+async def get_classes(session = Depends(db_connection)):
+    try:
+        session : Session
+        classes = session.query(Class).all()
+        classes_dict = [model_to_dict(class_item) for class_item in classes]
+        return classes_dict
+    except SQLAlchemyError as e:
+        raise HTTPException(status_code=560, detail = {'message': 'SQLAlchemy error','error':str(e)})
+    except Exception as e:
+        raise HTTPException(status_code=500, detail = {'message': 'Function error','error':str(e)})
+
+
+@router.put('/modify/',status_code=201,response_model=Classes_DB)
+async def modify_class( class_item: Annotated[Classes_Auxiliar,Body], session = Depends(db_connection)):
+    try:
+        session : Session
+        old_record : Class
+
+        if not(class_item.groupNo or class_item.hour or class_item.idSubject or class_item.idTeacher):
+            raise Error400('You must specify at least one field that will be modified')
+        
+        old_record = session.query(Class).filter_by(id = class_item.id).first()
+        if old_record is None:
+            raise Error404
+        
+        #If the user wants to modify the subject or teacher, we make sure that the ids exists
+        if class_item.idSubject:
+            subject = session.query(Subject.id).filter_by(id = class_item.idSubject).first()
+            if subject is None:
+                raise Error400(f'The subject with the id {class_item.idSubject} does not exists in the database')
+        if class_item.idTeacher:
+            teacher = session.query(Teacher.id).filter_by( id = class_item.idTeacher).first()
+            if teacher is None:
+                raise Error400(f'The teacher with the id {class_item.idTeacher} does not exists in the database')
+
+        #Check if the new group number has not been assigned yet
+        if class_item.groupNo:
+            group_class = session.query(Class.id).filter(Class.groupNo == class_item.groupNo, Class.id != class_item.id).first()
+            if group_class:
+                raise Error400(f'The group number #{class_item.groupNo} has already been assigned to another class')
+
+        if class_item.hour:
+            pattern = r'^\d{1,2}:\d{2} [APap][Mm]$'
+            class_item.hour =class_item.hour.upper()
+            if not re.match(pattern,class_item.hour):
+                raise Error400("The hour isn't in format hh:mm AM/PM") 
+
+        if class_item.idTeacher or class_item.hour:
+            #If the user wants to modify some teacher or schedule of a class, we will use this dictionary 
+            #with the original values, which will change according to user input, this dictionary will help us 
+            #to check if the final teacher and the hour of the record do not collide with another record
+            final_schedule = {'id':old_record.id,
+                                'teacher_id':old_record.idTeacher,
+                                'hour':old_record.hour}
+            if class_item.idTeacher:
+                final_schedule['teacher_id'] = class_item.idTeacher
+            if class_item.hour:
+                final_schedule['hour'] = class_item.hour
+            teacher_class = session.query(Class.id).filter(Class.hour == final_schedule['hour'],\
+                                Class.idTeacher == final_schedule['teacher_id'], Class.id != final_schedule['id']).first()
+            if teacher_class:
+                raise Error400(f'Cannot update the teacher/schedule of the class, the teacher with the id {final_schedule["teacher_id"]}\
+                     is busy in another class at the same time')
+
+          
+    except Error400 as e:
+        raise HTTPException(status_code=400, detail = {'message': str(e)})
+    except SQLAlchemyError as e:
+        raise HTTPException(status_code=560, detail = {'message': 'SQLAlchemy error','error':str(e)})
+    except Exception as e:
+        raise HTTPException(status_code=500, detail = {'message': 'Function error','error':str(e)})
+
+
