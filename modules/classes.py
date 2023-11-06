@@ -144,7 +144,21 @@ async def modify_class( class_item: Annotated[Classes_Auxiliar,Body], session = 
                 raise Error400(f'Cannot update the teacher/schedule of the class, the teacher with the id {final_schedule["teacher_id"]}\
                      is busy in another class at the same time')
 
+        modified_class = session.query(Class).filter_by(id = class_item.id).update({
+            Class.groupNo: class_item.groupNo if class_item.groupNo else old_record.groupNo,
+            Class.hour: class_item.hour if class_item.hour else old_record.hour,
+            Class.idSubject: class_item.idSubject if class_item.id else old_record.idSubject,
+            Class.idTeacher: class_item.idTeacher if class_item.idTeacher else old_record.idTeacher
+        })
+
+        if modified_class != 1:
+            session.rollback()
+            raise Error400("There was an error while updating the record")
+        session.commit()
           
+        new_record = session.query(Class).filter_by(id = class_item.id).first()
+        new_class = Classes_DB(**model_to_dict(new_record))
+        return new_class
     except Error400 as e:
         raise HTTPException(status_code=400, detail = {'message': str(e)})
     except SQLAlchemyError as e:
@@ -152,4 +166,27 @@ async def modify_class( class_item: Annotated[Classes_Auxiliar,Body], session = 
     except Exception as e:
         raise HTTPException(status_code=500, detail = {'message': 'Function error','error':str(e)})
 
+@router.delete('/erase/',status_code=201,responses={})
+async def delete_class(class_id : Annotated[int,Query(title='Id class',description='Id of the class to be deleted',ge=1,example=1203)],
+                        session = Depends(db_connection)):
+    try:
+        session : Session
+        class_item = session.query(Class).filter_by(id = class_id).first()
+        if class_item is None:
+            raise Error400
+
+        deleted_class = session.query(Class).filter_by(id = class_id).delete()
+        if deleted_class != 1:
+            session.rollback()
+            raise Error400
+        session.commit()
+        return {'status_code':201,'message':f'Success! The class with the id {class_id} was deleted succesfully'}
+    except Error400:
+        raise HTTPException(status_code=400,detail={'message':'There was an error deleting the class'})
+    except Error404:
+        raise HTTPException(status_code=404,detail={'message': f'The class with id {class_id} does not exist'})
+    except SQLAlchemyError as e:
+        raise HTTPException(status_code=560, detail = {'message': 'SQLAlchemy error','error':str(e)})
+    except Exception as e:
+        raise HTTPException(status_code=500, detail = {'message': 'Function error','error':str(e)})
 
